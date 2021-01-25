@@ -1,0 +1,8 @@
+/target/
+.settings/
+.project
+.classpath
+.idea/
+*.iml
+.vscode/
+pom.xml.old
