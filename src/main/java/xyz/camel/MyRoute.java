@@ -39,15 +39,21 @@ public class MyRoute extends RouteBuilder {
         rest("/api")//Log any get requests
         .get()
             .route()
-            .log("Sending request by api trigger!")
+            
             .setHeader(Exchange.HTTP_METHOD, simple("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
+            .removeHeader(Exchange.HTTP_URI)
+            .log("Sending request by api trigger!")
             .to("https://rata.digitraffic.fi/api/v1/train-locations/latest/")
+            .log("Got response!")
             .unmarshal(new ListJacksonDataFormat(TrainPOJO.class))
             //TODO filter out unnecessary stuff and get urlquerystringparameter from request and return maps link to the location of the train
             //.to("mock:marshalledObject");
+            
             .process(new HTTPResponseProcessor());
+            /*.setHeader("Location", simple("http://www.google.com"))
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302));*/
     }
 
 }
