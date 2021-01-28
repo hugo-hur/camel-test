@@ -40,7 +40,7 @@ public class MyRoute extends RouteBuilder {
         rest("/api")//Log any get requests
         .get()
             .route()
-            .log("Processing ${header.param1}")
+            //.log("Processing ${header.param1}")
             //.to(simple("${header.param1}"))
             .setHeader(Exchange.HTTP_METHOD, simple("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
