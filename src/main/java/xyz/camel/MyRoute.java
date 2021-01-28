@@ -4,6 +4,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.stereotype.Component;
 import org.apache.camel.Exchange;
+
 import org.apache.camel.component.jackson.ListJacksonDataFormat;
 
 import xyz.model.HTTPResponseProcessor;
@@ -39,20 +40,31 @@ public class MyRoute extends RouteBuilder {
         rest("/api")//Log any get requests
         .get()
             .route()
-            
+            .log("Processing ${header.param1}")
+            //.to(simple("${header.param1}"))
             .setHeader(Exchange.HTTP_METHOD, simple("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
             .removeHeader(Exchange.HTTP_URI)
+            //.removeHeader(Exchange.HTTP_URI)
             .log("Sending request by api trigger!")
             .to("https://rata.digitraffic.fi/api/v1/train-locations/latest/")
-            .log("Got response!")
-            .unmarshal(new ListJacksonDataFormat(TrainPOJO.class))
+            
+            //.log("Got response!")
+            
+            .unmarshal(new ListJacksonDataFormat(TrainPOJO.class)).to("direct:createLink")
+        .endRest();
             //TODO filter out unnecessary stuff and get urlquerystringparameter from request and return maps link to the location of the train
             //.to("mock:marshalledObject");
+            //"https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0)
+        from("direct:createLink")
+            .setHeader("Location", simple("https://www.google.com/maps/search/?api=1&query=${body[0].location.coordinates[1].toString()},${body[0].location.coordinates[0].toString()}"))
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302))
+            .transform().constant("Hello World");
             
-            .process(new HTTPResponseProcessor());
-            /*.setHeader("Location", simple("http://www.google.com"))
+
+            /*.process(new HTTPResponseProcessor())
+            .setHeader("Location", simple("http://www.google.com"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302));*/
     }
 
