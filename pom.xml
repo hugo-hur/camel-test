@@ -129,7 +129,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>app-thinkingportfolio</finalName>
+		<finalName>digia-camel-practice</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
