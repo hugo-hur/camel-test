@@ -45,17 +45,25 @@ public class MyRoute extends RouteBuilder {
             
             .unmarshal(new ListJacksonDataFormat(TrainPOJO.class))
             
-            .to("direct:createLink")
+            .to("direct:choose")
         .endRest();
             
         
+        from("direct:choose")
+            .choice()
+                .when(simple("${body.size()} > 0"))//We got train info for that train
+                    .to("direct:createLink")
+                .otherwise()//No train info, return 404
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(404))
+                    .transform().simple("Cannot find train with id: ${property.train_id}")
+        ;
+            
         from("direct:createLink")
             .process(new HTTPResponseProcessor())
-            .log("Train id is: ${property.train_id}")
             .setHeader("Location", simple("${body}"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302))
-            .transform().simple("${property.train_id}");
-            
+            .transform().simple("${property.train_id}")
+        ;
 
     }
 
