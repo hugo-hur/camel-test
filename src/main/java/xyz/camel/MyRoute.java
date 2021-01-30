@@ -25,7 +25,7 @@ public class MyRoute extends RouteBuilder {
         * Exercise: route train location data from digitraffic.fi and ping one location in google maps
         * Also create CXF-rest api for triggering route
         */
-        //Jotain
+        
         restConfiguration()//Bind the api servlet to the localhost port 8080
             .component("servlet")
             .bindingMode(RestBindingMode.auto);
@@ -57,9 +57,6 @@ public class MyRoute extends RouteBuilder {
             .transform().simple("${property.train_id}");
             
 
-            /*.process(new HTTPResponseProcessor())
-            .setHeader("Location", simple("http://www.google.com"))
-            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302));*/
     }
 
 }
