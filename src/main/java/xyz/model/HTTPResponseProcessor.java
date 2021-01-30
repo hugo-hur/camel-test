@@ -21,24 +21,11 @@ public class HTTPResponseProcessor implements Processor {
     
     public void process(Exchange exchange) throws Exception {
 
-        //System.out.println("Hello from processor!");
-        //CamelMessage message = (CamelMessage)exchange.getIn().getBody(CamelMessage.class);
-        List<TrainPOJO> message = (List<TrainPOJO>)exchange.getIn().getBody(List.class);
-        //Integer.parseInt
-        int train_id = Integer.parseInt((String)exchange.getProperty("train_id"));
-        //System.out.println(message);
-        //System.out.println(message.size());
-        List<String> outList = new ArrayList<>();
-        List<Double> coordinates = message.get(train_id).getLocation().getCoordinates();
-        /*for( TrainPOJO t : message){
-            //LocationPOJO l = t.getLocation();
-            List<Double> coordinates = t.getLocation().getCoordinates();
-            String url = "https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0);
-            outList.add(url);
-        }*/
-        outList.add("https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0));
-        exchange.getOut().setBody(outList);
-        //System.out.println("Message with correlationId get for exchange " + message.getMsgCorrelationId());
-        //System.out.println("Body" + message.getBody());
+        
+        List<TrainPOJO> message = (List<TrainPOJO>)exchange.getIn().getBody(List.class);//Get the list from the parsed response body
+        List<Double> coordinates = message.get(0).getLocation().getCoordinates();//Get the coordinates from the train object
+        //Generate google maps link.
+        exchange.getOut().setBody("https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0));
+        
     }
 }

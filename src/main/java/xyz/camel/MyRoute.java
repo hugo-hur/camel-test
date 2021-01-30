@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.apache.camel.Exchange;
 
 import org.apache.camel.component.jackson.ListJacksonDataFormat;
+//import org.apache.camel.component.jackson.JacksonDataFormat;
 
 import xyz.model.HTTPResponseProcessor;
 import xyz.model.TrainPOJO;
@@ -32,27 +33,28 @@ public class MyRoute extends RouteBuilder {
         rest("/api")//Log any get requests
         .get()
             .route()
-            //.log("Processing ${header.param1}")
-            //.to(simple("${header.param1}"))
             .setProperty("train_id", simple("${header.train_id}"))//Move train_id to property
             .log("Train_id ${property.train_id}")
-            .removeHeaders("*")//Remove all header
+            .removeHeaders("*")//Remove all headers
             .setHeader(Exchange.HTTP_METHOD, constant("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
-            //.removeHeader(Exchange.HTTP_URI)
-            .log("Sending request by api trigger!")
-            .to("https://rata.digitraffic.fi/api/v1/train-locations/latest/")
-            .unmarshal(new ListJacksonDataFormat(TrainPOJO.class)).to("direct:createLink")
+            .log("Sending request to train api!")
+            //Returns json list with max 1 object
+            .toD("https://rata.digitraffic.fi/api/v1/train-locations/latest/${property.train_id}")
+            
+            .unmarshal(new ListJacksonDataFormat(TrainPOJO.class))
+            
+            .to("direct:createLink")
         .endRest();
             
         
         from("direct:createLink")
             .process(new HTTPResponseProcessor())
             .log("Train id is: ${property.train_id}")
-            .setHeader("Location", simple("${body[0]}"))
+            .setHeader("Location", simple("${body}"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302))
-            .transform().constant("Hello World");
+            .transform().simple("${property.train_id}");
             
 
             /*.process(new HTTPResponseProcessor())
