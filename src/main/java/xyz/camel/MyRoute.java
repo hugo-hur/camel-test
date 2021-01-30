@@ -34,10 +34,13 @@ public class MyRoute extends RouteBuilder {
             .route()
             //.log("Processing ${header.param1}")
             //.to(simple("${header.param1}"))
+            .setProperty("train_id", simple("${header.train_id}"))//Move train_id to property
+            .log("Train_id ${property.train_id}")
+            .removeHeaders("*")//Remove all header
             .setHeader(Exchange.HTTP_METHOD, constant("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
-            .removeHeader(Exchange.HTTP_URI)
+            //.removeHeader(Exchange.HTTP_URI)
             .log("Sending request by api trigger!")
             .to("https://rata.digitraffic.fi/api/v1/train-locations/latest/")
             .unmarshal(new ListJacksonDataFormat(TrainPOJO.class)).to("direct:createLink")
@@ -46,7 +49,7 @@ public class MyRoute extends RouteBuilder {
         
         from("direct:createLink")
             .process(new HTTPResponseProcessor())
-            .log("${body[0]}")
+            .log("Train id is: ${property.train_id}")
             .setHeader("Location", simple("${body[0]}"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302))
             .transform().constant("Hello World");

@@ -24,15 +24,19 @@ public class HTTPResponseProcessor implements Processor {
         //System.out.println("Hello from processor!");
         //CamelMessage message = (CamelMessage)exchange.getIn().getBody(CamelMessage.class);
         List<TrainPOJO> message = (List<TrainPOJO>)exchange.getIn().getBody(List.class);
+        //Integer.parseInt
+        int train_id = Integer.parseInt((String)exchange.getProperty("train_id"));
         //System.out.println(message);
         //System.out.println(message.size());
         List<String> outList = new ArrayList<>();
-        for( TrainPOJO t : message){
+        List<Double> coordinates = message.get(train_id).getLocation().getCoordinates();
+        /*for( TrainPOJO t : message){
             //LocationPOJO l = t.getLocation();
             List<Double> coordinates = t.getLocation().getCoordinates();
             String url = "https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0);
             outList.add(url);
-        }
+        }*/
+        outList.add("https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0));
         exchange.getOut().setBody(outList);
         //System.out.println("Message with correlationId get for exchange " + message.getMsgCorrelationId());
         //System.out.println("Body" + message.getBody());
