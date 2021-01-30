@@ -10,6 +10,7 @@ import org.apache.camel.Processor;
 import xyz.model.TrainPOJO;
 import xyz.model.LocationPOJO;
 import java.util.List;
+import java.util.ArrayList;
 
 
 
@@ -25,13 +26,14 @@ public class HTTPResponseProcessor implements Processor {
         List<TrainPOJO> message = (List<TrainPOJO>)exchange.getIn().getBody(List.class);
         //System.out.println(message);
         //System.out.println(message.size());
+        List<String> outList = new ArrayList<>();
         for( TrainPOJO t : message){
             //LocationPOJO l = t.getLocation();
             List<Double> coordinates = t.getLocation().getCoordinates();
-            //System.out.println("https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0));
-             //https://www.google.com/maps/search/?api=1&query=67.207279,23.844196
-            //23.844196, 67.207279
+            String url = "https://www.google.com/maps/search/?api=1&query=" + coordinates.get(1) + "," + coordinates.get(0);
+            outList.add(url);
         }
+        exchange.getOut().setBody(outList);
         //System.out.println("Message with correlationId get for exchange " + message.getMsgCorrelationId());
         //System.out.println("Body" + message.getBody());
     }
