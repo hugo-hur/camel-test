@@ -6,15 +6,10 @@ import org.springframework.stereotype.Component;
 import org.apache.camel.Exchange;
 
 import org.apache.camel.component.jackson.ListJacksonDataFormat;
-//import org.apache.camel.component.jackson.JacksonDataFormat;
 
 import xyz.model.HTTPResponseProcessor;
 import xyz.model.TrainPOJO;
-/**
- * A simple Camel route that triggers from a timer and calls a bean and prints to system out.
- * <p/>
- * Use <tt>@Component</tt> to make Camel auto detect this route when starting.
- */
+
 @Component
 public class MyRoute extends RouteBuilder {
 
@@ -30,38 +25,37 @@ public class MyRoute extends RouteBuilder {
             .component("servlet")
             .bindingMode(RestBindingMode.auto);
 
-        rest("/api")//Log any get requests
+        rest("/api")//Api will be available at localhost:8080/camel/api?train_id=
         .get()
             .route()
-            .setProperty("train_id", simple("${header.train_id}"))//Move train_id to property
-            .log("Train_id ${property.train_id}")
-            .removeHeaders("*")//Remove all headers
+            .setProperty("train_id", simple("${header.train_id}")) //Move train_id to property to bypass the request to the digitraffic api
+            .log("train_id = ${property.train_id}")
+            .removeHeaders("*") //Remove all headers to prevent unwated ones from passing to the digitraffic api http request
             .setHeader(Exchange.HTTP_METHOD, constant("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
-            .log("Sending request to train api!")
             //Returns json list with max 1 object
             .toD("https://rata.digitraffic.fi/api/v1/train-locations/latest/${property.train_id}")
-            
             .unmarshal(new ListJacksonDataFormat(TrainPOJO.class))
-            
             .to("direct:choose")
         .endRest();
             
         
         from("direct:choose")
             .choice()
-                .when(simple("${body.size()} > 0"))//We got train info for that train
+                .when(simple("${body.size()} > 0")) //We got train info for that train
                     .to("direct:createLink")
                 .otherwise()//No train info, return 404
                     .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(404))
+                    .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
                     .transform().simple("Cannot find train with id: ${property.train_id}")
         ;
             
         from("direct:createLink")
-            .process(new HTTPResponseProcessor())
+            .process(new HTTPResponseProcessor()) //Generate maps link
             .setHeader("Location", simple("${body}"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(302))
+            .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
             .transform().simple("${property.train_id}")
         ;
 
