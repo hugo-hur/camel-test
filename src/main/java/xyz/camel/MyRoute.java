@@ -30,7 +30,7 @@ public class MyRoute extends RouteBuilder {
             .route()
             .setProperty("train_id", simple("${header.train_id}")) //Move train_id to property to bypass the request to the digitraffic api
             .log("train_id = ${property.train_id}")
-            .removeHeaders("*") //Remove all headers to prevent unwated ones from passing to the digitraffic api http request
+            .removeHeaders("*") //Remove all headers to prevent unwanted ones from passing to the digitraffic api http request
             .setHeader(Exchange.HTTP_METHOD, constant("GET"))
             .setHeader("Accept-Encoding", constant("gzip"))
             .setHeader("Accept", constant("*/*"))
